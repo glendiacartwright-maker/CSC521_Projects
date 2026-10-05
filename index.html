@@ -2,51 +2,223 @@
 <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 <title>CSC 521: Project 1: Glendia Fowler-Cartwright; Sean Peterson</title>
 
-<!  Input Form for the user -->
-<style> 
-* 
-{ box-sizing: border-box; } 
-body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; } 
-.container { max-width: 1000px; margin: auto; 
-background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,.1); }
-h1 { margin-top: 0; } 
-.form-group { margin-bottom: 20px; } label { display: block; font-weight: bold; 
-margin-bottom: 8px; } 
-select, textarea, button { font-size: 16px; } 
-select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; } 
-textarea { min-height: 100px; font-family: monospace; resize: vertical; } button { padding: 10px 18px; 
-                                                                                  
-border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; margin-right: 8px; }
-button:hover { background: #1d4ed8; } button.secondary { background: #6b7280; } 
-.workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px; } 
-canvas { width: 100%; border: 1px solid #ccc; background: #fff; border-radius: 6px; } #results 
-{ background: #f8fafc; border-radius: 6px; padding: 15px; min-height: 100px; } .error { color: #dc2626; font-weight: bold; } .success 
-{ color: #166534; } @media (max-width: 700px) { .workspace { grid-template-columns: 1fr; } } 
-</style> 
-</head> 
-<body>      
-<div class="container"> 
-<h1>CSC 521: Project 1  </h1>
-<h3>Team: Glendia Fowler-Cartwright, Sean Peterson</h3>   
-  
-<form id="shapeForm"> 
-<div class="form-group"> <label for="shapeType">Select Shape Type</label> 
-<select id="shapeType"> 
-<option value="square">Square</option> 
-<option value="rectangle">Rectangle</option>
-<option value="triangle">Triangle</option> </select></div> 
-<div class="form-group"> <label for="tuples"> Enter a set of coordinates in the box below using the format. The values shown in the textbox are placeholders. Replace them with your own tuples.:
-{(5,5),(6,5),(7,5),(5,6),(6,6),(7,6)}</label> 
-<textarea id="tuples"> (5,5) (6,5) (7,5) (5,6) (6,6) (7,6) (5,7) (6,7) (7,7)</textarea> 
-</div> 
-<button type="submit">Generate Image </button> 
-<button type="button" class="secondary" id="tuplesButton"> Input Tuples </button> 
-<button type="button" class="secondary" id="clearButton"> Clear </button> 
-</form> 
-<div class="workspace"> </div>      
-<h3>Image</h3> 
-<canvas id="CreateImage" width="50" height="50"></canvas> </div> <div> <h3>Results</h3> 
-<div id="results"> Enter tuples and click <strong>Create Image</strong>. </div> </div> </div> </div>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f4f4f4;
+        margin: 30px;
+    }
+
+    textarea {
+        width: 500px;
+        height: 100px;
+        font-family: monospace;
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #error {
+        color: #c62828;
+        margin: 15px;
+        font-weight: bold;
+    }
+
+    #success {
+        color: #2e7d32;
+        margin: 15px;
+        font-weight: bold;
+    }
+
+    #grid {
+        display: grid;
+        grid-template-columns: repeat(50, 10px);
+        grid-template-rows: repeat(50, 10px);
+        width: 500px;
+        height: 500px;
+        margin: 20px auto;
+        border: 2px solid black;
+        background-color: white;
+    }
+
+    .cell {
+        width: 10px;
+        height: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+    }
+
+    .pixel {
+        background-color: black;
+    }
+</style>
+
+</head>
+
+<body>
+
+<h1>Draw a Shape</h1>
+
+<p>
+    Enter a set of coordinates using the format:
+    <br>
+    <strong>{(5,5),(6,5),(7,5),(5,6),(6,6),(7,6)}</strong>
+</p>
+
+<form id="coordinateForm">
+    <textarea
+        id="coordinates"
+        placeholder="{(5,5),(6,5),(7,5),(5,6),(6,6),(7,6)}"
+    ></textarea>
+    <br>
+    <button type="submit">Draw Shape</button>
+</form>
+
+<div id="error"></div>
+<div id="success"></div>
+
+<div id="grid"></div>
+
+<script>
+    const form = document.getElementById("coordinateForm");
+    const input = document.getElementById("coordinates");
+    const grid = document.getElementById("grid");
+    const errorMessage = document.getElementById("error");
+    const successMessage = document.getElementById("success");
+
+    // Create the 50 x 50 grid
+    function createGrid() {
+        grid.innerHTML = "";
+
+        for (let y = 49; y >= 0; y--) {
+            for (let x = 0; x < 50; x++) {
+                const cell = document.createElement("div");
+
+                cell.classList.add("cell");
+                cell.dataset.x = x;
+                cell.dataset.y = y;
+
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    // Parse the user's input
+    function parseImage(input) {
+        const pixels = new Set();
+
+        // Remove whitespace
+        const cleanedInput = input.replace(/\s/g, "");
+
+        // Check basic format
+        if (!cleanedInput.startsWith("{") ||
+            !cleanedInput.endsWith("}")) {
+            throw new Error(
+                "Invalid format. Your input must start with '{' and end with '}'."
+            );
+        }
+
+        // Extract the contents between { and }
+        const contents = cleanedInput.slice(1, -1);
+
+        if (contents === "") {
+            throw new Error("Please enter at least one coordinate.");
+        }
+
+        // Split into coordinate pairs
+        const pairs = contents.split(",");
+
+        // There should be coordinate pairs, not individual numbers
+        const matches = cleanedInput.match(/\(\d+,\d+\)/g) || [];
+
+        if (matches.length === 0) {
+            throw new Error(
+                "No valid coordinates were found. Example: {(5,5),(6,5)}"
+            );
+        }
+
+        // Make sure the entire contents consists of valid coordinates
+        const reconstructed = "{" + matches.join(",") + "}";
+
+        if (reconstructed !== cleanedInput) {
+            throw new Error(
+                "Invalid coordinate format. Use {(x,y),(x,y),...}"
+            );
+        }
+
+        for (const match of matches) {
+            const [x, y] = match
+                .slice(1, -1)
+                .split(",")
+                .map(Number);
+
+            // Check that coordinates are on the 50 x 50 grid
+            if (x < 0 || x > 49 || y < 0 || y > 49) {
+                throw new Error(
+                    `Coordinate (${x},${y}) is outside the grid. ` +
+                    "Both x and y must be between 0 and 49."
+                );
+            }
+
+            // A Set automatically removes duplicate pixels
+            pixels.add(`${x},${y}`);
+        }
+
+        return pixels;
+    }
+
+    // Draw the pixels
+    function drawShape(pixels) {
+        // Clear previous shape
+        document.querySelectorAll(".pixel").forEach(cell => {
+            cell.classList.remove("pixel");
+        });
+
+        for (const coordinate of pixels) {
+            const [x, y] = coordinate.split(",").map(Number);
+
+            const cell = document.querySelector(
+                `.cell[data-x="${x}"][data-y="${y}"]`
+            );
+
+            if (cell) {
+                cell.classList.add("pixel");
+            }
+        }
+    }
+
+    // Handle form submission
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        errorMessage.textContent = "";
+        successMessage.textContent = "";
+
+        try {
+            const pixels = parseImage(input.value);
+
+            drawShape(pixels);
+
+            successMessage.textContent =
+                `Shape drawn successfully! ${pixels.size} unique pixel(s).`;
+
+        } catch (error) {
+            errorMessage.textContent = error.message;
+
+            // Clear the grid if there is an error
+            document.querySelectorAll(".pixel").forEach(cell => {
+                cell.classList.remove("pixel");
+            });
+        }
+    });
+
 
 <! JavaScript -->
   
