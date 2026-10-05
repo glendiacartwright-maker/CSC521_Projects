@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 <title>CSC 521: Project 1: Glendia Fowler-Cartwright; Sean Peterson</title>
+
+<!  Input Form for the user -->
 <style> 
 * 
 { box-sizing: border-box; } 
 body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; } 
 .container { max-width: 1000px; margin: auto; 
 background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,.1); }
-h1 { margin-top: 0; } .form-group { margin-bottom: 20px; } label { display: block; font-weight: bold; 
-margin-bottom: 8px; } select, textarea, button { font-size: 16px; } select, 
-textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; } 
+h1 { margin-top: 0; } 
+.form-group { margin-bottom: 20px; } label { display: block; font-weight: bold; 
+margin-bottom: 8px; } 
+select, textarea, button { font-size: 16px; } 
+select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; } 
 textarea { min-height: 100px; font-family: monospace; resize: vertical; } button { padding: 10px 18px; 
                                                                                   
 border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; margin-right: 8px; }
@@ -24,14 +28,16 @@ canvas { width: 100%; border: 1px solid #ccc; background: #fff; border-radius: 6
 <div class="container"> 
 <h1>CSC 521: Project 1  </h1>
 <h3>Team: Glendia Fowler-Cartwright, Sean Peterson</h3>
-<form id="shapeForm"> <div class="form-group"> <label for="shapeType">Shape Type</label> 
+<form id="shapeForm"> 
+<div class="form-group"> <label for="shapeType">Shape Type</label> 
 <select id="shapeType"> 
 <option value="square">Square</option> 
 <option value="rectangle">Rectangle</option>
-<option value="triangle">Triangle</option> </select>
-<div class="form-group"> <label for="tubles"> Tuples </label> 
-<textarea id="tubles"> (5,5) (6,5) (7,5) (5,6) (6,6) (7,6) (5,7) (6,7) (7,7)</textarea> 
-</div> <button type="submit">Generate Image </button> 
+<option value="triangle">Triangle</option> </select></div> 
+<div class="form-group"> <label for="tuples"> Tuples </label> 
+<textarea id="tuples"> (5,5) (6,5) (7,5) (5,6) (6,6) (7,6) (5,7) (6,7) (7,7)</textarea> 
+</div> 
+<button type="submit">Generate Image </button> 
 <button type="button" class="secondary" id="tuplesButton"> Input Tubles </button> 
 <button type="button" class="secondary" id="clearButton"> Clear </button> 
 </form> 
@@ -39,7 +45,10 @@ canvas { width: 100%; border: 1px solid #ccc; background: #fff; border-radius: 6
 <h3>Create Image</h3> 
 <canvas id="CreateImage" width="500" height="500"></canvas> </div> <div> <h3>Results</h3> 
 <div id="results"> Enter tuples and click <strong>Create Image</strong>. </div> </div> </div> </div>
-     <script></script>
+
+<! JavaScript -->
+  
+<script></script>
 </body></html>
 
      
