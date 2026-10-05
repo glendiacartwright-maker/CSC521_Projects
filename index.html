@@ -1,32 +1,76 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>521 Project 1</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            margin: 40px;
-        }
+<html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Shape Builder</title>
 
-        textarea {
-            width: 300px;
-            height: 100px;
-        }
+<style> * { box-sizing: border-box; } body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; } .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,.1); } h1 { margin-top: 0; } .form-group { margin-bottom: 20px; } label { display: block; font-weight: bold; margin-bottom: 8px; } select, textarea, button { font-size: 16px; } select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; } textarea { min-height: 100px; font-family: monospace; resize: vertical; } button { padding: 10px 18px; border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; margin-right: 8px; } button:hover { background: #1d4ed8; } button.secondary { background: #6b7280; } .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px; } canvas { width: 100%; border: 1px solid #ccc; background: #fff; border-radius: 6px; } #results { background: #f8fafc; border-radius: 6px; padding: 15px; min-height: 100px; } .error { color: #dc2626; font-weight: bold; } .success { color: #166534; } @media (max-width: 700px) { .workspace { grid-template-columns: 1fr; } } </style>
 
-        button {
-            margin-top: 10px;
-            padding: 8px 15px;
-        }
-
-        #result {
-            margin-top: 15px;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
 </head>
 
 <body>
+
+<div class="container">
+
+<h1>Shape Builder</h1>
+
+<p> Enter coordinate tuples to create a square, rectangle, or triangle. Coordinates use the format <code>(x,y)</code>. </p>
+
+<form id="shapeForm">
+
+<div class="form-group">
+  <label for="shapeType">Shape Type</label>
+
+  <select id="shapeType">
+    <option value="square">Square</option>
+    <option value="rectangle">Rectangle</option>
+    <option value="triangle">Triangle</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label for="coordinates">
+    Coordinates
+  </label>
+
+  <textarea
+    id="coordinates"
+    placeholder="Example:
+
+(50,50)
+(250,50)
+(250,250)
+(50,250)"
+></textarea>
+</div>
+
+<button type="submit">Create Shape</button>
+<button type="button" class="secondary" id="exampleButton">
+  Load Example
+</button>
+<button type="button" class="secondary" id="clearButton">
+  Clear
+</button>
+
+</form>
+
+<div class="workspace">
+
+<div>
+  <h2>Canvas</h2>
+  <canvas id="canvas" width="500" height="500"></canvas>
+</div>
+
+<div>
+  <h2>Results</h2>
+  <div id="results">
+    Enter coordinates and click <strong>Create Shape</strong>.
+  </div>
+</div>
+
+</div>
+
+</div>
+
+<script> const form = document.getElementById("shapeForm"); const shapeType = document.getElementById("shapeType"); const coordinatesInput = document.getElementById("coordinates"); const canvas = document.getElementById("canvas"); const ctx = canvas.getContext("2d"); const results = document.getElementById("results"); /* * Convert text such as: * * (50,50) * (250,50) * (250,250) * * into: * * [ * {x: 50, y: 50}, * {x: 250, y: 50}, * {x: 250, y: 250} * ] */ function parseCoordinates(text) { const matches = text.match( /\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/g ); if (!matches) { throw new Error( "No valid coordinate tuples were found. Use the format (x,y)." ); } return matches.map(tuple => { const values = tuple .replace(/[()]/g, "") .split(","); return { x: Number(values[0]), y: Number(values[1]) }; }); } function distance(a, b) { return Math.sqrt( Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) ); } function polygonArea(points) { let area = 0; for (let i = 0; i < points.length; i++) { const j = (i + 1) % points.length; area += points[i].x * points[j].y - points[j].x * points[i].y; } return Math.abs(area / 2); } function perimeter(points) { let total = 0; for (let i = 0; i < points.length; i++) { const next = (i + 1) % points.length; total += distance(points[i], points[next]); } return total; } function validateShape(points, type) { const requiredPoints = { triangle: 3, rectangle: 4, square: 4 }; if (points.length !== requiredPoints[type]) { throw new Error( `${type} requires exactly ` + `${requiredPoints[type]} coordinate tuples.` ); } } function drawShape(points, type) { ctx.clearRect( 0, 0, canvas.width, canvas.height ); /* * Draw coordinate grid */ drawGrid(); /* * Draw polygon */ ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y); for (let i = 1; i < points.length; i++) { ctx.lineTo(points[i].x, points[i].y); } ctx.closePath(); /* * Fill */ ctx.fillStyle = "rgba(37, 99, 235, 0.25)"; ctx.fill(); /* * Outline */ ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 3; ctx.stroke(); /* * Draw points */ points.forEach((point, index) => { ctx.beginPath(); ctx.arc( point.x, point.y, 6, 0, Math.PI * 2 ); ctx.fillStyle = "#dc2626"; ctx.fill(); /* * Point labels */ ctx.fillStyle = "#111"; ctx.font = "14px Arial"; ctx.fillText( `P${index + 1} (${point.x}, ${point.y})`, point.x + 8, point.y - 8 ); }); } function drawGrid() { const gridSize = 25; ctx.strokeStyle = "#e5e7eb"; ctx.lineWidth = 1; for ( let x = 0; x <= canvas.width; x += gridSize ) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); } for ( let y = 0; y <= canvas.height; y += gridSize ) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); } } form.addEventListener("submit", function(event) { event.preventDefault(); try { const type = shapeType.value; const points = parseCoordinates(coordinatesInput.value); validateShape(points, type); drawShape(points, type); const area = polygonArea(points); const shapePerimeter = perimeter(points); results.innerHTML = ` <p class="success"> <strong>${type.toUpperCase()}</strong> created successfully. </p> <p> <strong>Points:</strong> ${points.length} </p> <p> <strong>Area:</strong> ${area.toFixed(2)} square units </p> <p> <strong>Perimeter:</strong> ${shapePerimeter.toFixed(2)} units </p> `; } catch (error) { results.innerHTML = ` <p class="error"> ${error.message} </p> `; ctx.clearRect( 0, 0, canvas.width, canvas.height ); drawGrid(); } }); /* * Load an example appropriate for the * currently selected shape. */ document .getElementById("exampleButton") .addEventListener("click", function() { const type = shapeType.value; if (type === "square") { coordinatesInput.value = `(50,50) (250,50) (250,250) (50,250)`; } else if (type === "rectangle") { coordinatesInput.value = `(50,50) (350,50) (350,200) (50,200)`; } else if (type === "triangle") { coordinatesInput.value = `(100,300) (250,75) (400,300)`; } }); /* * Clear everything. */ document .getElementById("clearButton") .addEventListener("click", function() { coordinatesInput.value = ""; ctx.clearRect( 0, 0, canvas.width, canvas.height ); drawGrid(); results.innerHTML = "Enter coordinates and click <strong>Create Shape</strong>."; }); /* * Draw initial grid. */ drawGrid(); </script>
+
+</body> </html>
+
