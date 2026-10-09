@@ -1,43 +1,60 @@
 <!DOCTYPE html>
-<html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-<title>CSC 521: Project 1: Glendia Fowler-Cartwright; Sean Peterson</title>
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8"> 
+
+<style>
+  .project-title {
+    background: #172554;
+    color: white;
+    text-align: center;
+    padding: 16px 20px;
+    font-family: Arial, sans-serif;
+    border-radius: 8px;
+  }
+   
+</style>
+</head>
+
+<body>
 
 <style>
     body {
         font-family: Arial, sans-serif;
         text-align: center;
-        background-color: #f4f4f4;
+        background-color: #EAF0F8;
         margin: 30px;
     }
 
+
     textarea {
-        width: 500px;
+        width: 400px;
         height: 100px;
-        font-family: monospace;
-        font-size: 16px;
+        font-family:  Arial, sans-serif;
+        font-size: 14px;
         padding: 10px;
     }
 
     button {
         margin-top: 10px;
         padding: 10px 20px;
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
     }
 
-    #error {
-        color: #c62828;
+    #errorMessage {
+        color:#FF0000;
         margin: 15px;
         font-weight: bold;
     }
 
-    #success {
-        color: #2e7d32;
+    #goodMessage {
+        color: #008000;
         margin: 15px;
         font-weight: bold;
     }
 
-    #grid {
+    #createGrid {
         display: grid;
         grid-template-columns: repeat(50, 10px);
         grid-template-rows: repeat(50, 10px);
@@ -64,16 +81,19 @@
 
 <body>
 
-<h1>CSC521 Project 1</h1>
-<br
-<h3> Team:  Glendia Fowler-Cartwright and Sean Peterson </h3>
-<br
-<br
-<br
-<p>
-    Enter a set of coordinates using this format: (The values in the text box are placeholders. Enter your own sets of tuples to generate a shape.)
-    <br
-    <strong>{(5,5),(6,5),(7,5),(5,6),(6,6),(7,6)}</strong>
+<div class="project-title">
+  <p>Team: Glendia Fowler-Cartwright * Sean Peterson</p>
+  <h1>CSC 521 Project 1</h1>
+  
+</div
+
+<p> </p>
+<p> </p>
+
+
+  Enter a set of coordinates using this format: <strong>{(5,5),(6,5),(7,5),(5,6),(6,6),(7,6)}</strong>
+  <br>
+  (The values in the text box are placeholders. Enter your own sets of tuples to generate an image.)
 </p>
 
 <form id="coordinateForm">
@@ -85,19 +105,21 @@
     <button type="submit">Create Shape</button>
 </form>
 
-<div id="error"></div>
-<div id="success"></div>
+<div id="errorMessage"></div>
+<div id="goodMessage"></div>
 
-<div id="grid"></div>
+<div id="createGrid"></div>
+
+<!-- Used Chat.deepseek to help with creating and debugging the 50 x 50 Grid, along with cell data set xy. -->
 
 <script>
     const form = document.getElementById("coordinateForm");
     const input = document.getElementById("coordinates");
-    const grid = document.getElementById("grid");
-    const errorMessage = document.getElementById("error");
-    const successMessage = document.getElementById("success");
+    const grid = document.getElementById("createGrid");
+    const errorMessage = document.getElementById("errorMessage");
+    const goodMessage = document.getElementById("goodMessage");
 
-    // Create the 50 x 50 grid
+    // Grid
     function createGrid() {
         grid.innerHTML = "";
 
@@ -114,14 +136,13 @@
         }
     }
 
-    
+    // Used Chat.deepseek to help debug parsing the input . -->
     function parseImage(input) {
         const pixels = new Set();
 
-        // Remove whitespace
+        // This removes the whitespace
         const cleanedInput = input.replace(/\s/g, "");
-
-        // Check basic format
+      
         if (!cleanedInput.startsWith("{") ||
             !cleanedInput.endsWith("}")) {
             throw new Error(
@@ -129,17 +150,13 @@
             );
         }
 
-        // Extract the contents between { and }
         const contents = cleanedInput.slice(1, -1);
 
         if (contents === "") {
-            throw new Error("Please enter at least one coordinate.");
+            throw new Error("Enter at least one coordinate.");
         }
 
-        // Split into coordinate pairs
-        const pairs = contents.split(",");
-
-        // There should be coordinate pairs, not individual numbers
+       
         const matches = cleanedInput.match(/\(\d+,\d+\)/g) || [];
 
         if (matches.length === 0) {
@@ -148,7 +165,7 @@
             );
         }
 
-        // Make sure the entire contents consists of valid coordinates
+        // Valid coordinates
         const reconstructed = "{" + matches.join(",") + "}";
 
         if (reconstructed !== cleanedInput) {
@@ -163,7 +180,7 @@
                 .split(",")
                 .map(Number);
 
-            // Check that coordinates are on the 50 x 50 grid
+            // Check  for coordinates on the grid
             if (x < 0 || x > 49 || y < 0 || y > 49) {
                 throw new Error(
                     `Coordinate (${x},${y}) is outside the grid. ` +
@@ -171,14 +188,14 @@
                 );
             }
 
-            // A Set automatically removes duplicate pixels
+            // Remove duplicate pixels
             pixels.add(`${x},${y}`);
         }
 
         return pixels;
     }
 
-    // Draw the pixels
+    // Create the shape
     function drawShape(pixels) {
         // Clear previous shape
         document.querySelectorAll(".pixel").forEach(cell => {
@@ -203,28 +220,28 @@
         event.preventDefault();
 
         errorMessage.textContent = "";
-        successMessage.textContent = "";
+        goodMessage.textContent = "";
 
         try {
             const pixels = parseImage(input.value);
 
             drawShape(pixels);
 
-            successMessage.textContent =
-                `Shape drawn successfully! ${pixels.size} unique pixel(s).`;
+            goodMessage.textContent =
+                `Well done! `;
 
         } catch (error) {
             errorMessage.textContent = error.message;
 
-            // Clear the grid if there is an error
+            // If there is an error, clear the grid
             document.querySelectorAll(".pixel").forEach(cell => {
                 cell.classList.remove("pixel");
             });
         }
     });
 
-  
+    // Page loads, create the grid 
+    createGrid();
 </script>
-</body></html>
 
-     
+</body> </html>
