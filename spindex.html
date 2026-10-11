@@ -240,23 +240,59 @@
         const wid = maxXCoord - minXCoord;
         const ht = maxYCoord - minYCoord;
 
-        let full = true;
+        let isFull = true;
         for (let y=minYCoord; y <= maxYCoord; y++) {
             for (let x=minXCoord; x <= maxXCoord; x++) {
-                const coords = "(x,y)";
-                if (coords not in pixels) {
-                    full = false;
-                break;
+                const coords = `${x},${y}`;
+                if (!pixels.has(coords)) {
+                    isFull = false;
+                    break;
                 }
-            break;
+            }
+            if (!isFull) {
+                break;                      
             }
         }
-        return full;
-        
-        
-        
+        return isFull;
 
+        if (isFull) {
+            if (width === height) {
+                return "square";
+            }
+            else {
+                return "rectangle";
+            }
+        }        
         
+        const rows = new Map();
+        for (const [x,y] of points) {
+            if (rows[y] === undefined) {
+                rows[y] = 1;
+            }
+            else {
+                rows[y]++;
+            }
+        }
+
+        const c = [...rows];
+        c.sort((a,b) => a-b);
+
+        let isTriangle = true;
+        for (let i=1; i < c.length; i++) {
+            if (c[i] <= c[i-1]) {
+                isTriangle = false;
+            }
+        }
+
+        if (isTriangle && c.length >= 3) {
+            return "triangle";
+        }
+
+        else {
+            return "other";
+        }
+
+    determineShape(pixels);
         
 
   
