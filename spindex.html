@@ -225,6 +225,37 @@
 
     function determineShape(pixels) {
 
+        const coords = [...pixels].map(pixel=> {
+            const[x,y] = pixel.split(",").map(Number);
+            return [x,y];
+        });
+        const xCoords = points.map(p=>p[0]);
+        const yCoords = points.map(p=>p[1]);
+
+        const minXCoord = Math.min(...xCoords);
+        const maxXCoord = Math.max(...xCoords);
+        const minYCoord = Math.min(...yCoords);
+        const maxYCoord = Math.max(...yCoords);
+
+        const wid = maxXCoord - minXCoord;
+        const ht = maxYCoord - minYCoord;
+
+        let full = true;
+        for (let y=minYCoord; y <= maxYCoord; y++) {
+            for (let x=minXCoord; x <= maxXCoord; x++) {
+                const coords = "(x,y)";
+                if (coords not in pixels) {
+                    full = false;
+                break;
+                }
+            break;
+            }
+        }
+        return full;
+        
+        
+        
+
         
         
 
