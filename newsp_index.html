@@ -228,6 +228,8 @@
 
             drawShape(pixels);
 
+            const shape = determineShape(pixels);
+
             goodMessage.textContent =
                 `Well done! `;
 
@@ -243,6 +245,73 @@
 
     // Page loads, create the grid 
     createGrid();
+
+  function determineShape(pixels) {
+
+        const coords = [...pixels].map(pixel=> {
+            const[x,y] = pixel.split(",").map(Number);
+            return [x,y];
+        });
+        const xCoords = coords.map(p=>p[0]);
+        const yCoords = coords.map(p=>p[1]);
+
+        const minXCoord = Math.min(...xCoords);
+        const maxXCoord = Math.max(...xCoords);
+        const minYCoord = Math.min(...yCoords);
+        const maxYCoord = Math.max(...yCoords);
+
+        const wid = maxXCoord - minXCoord + 1;
+        const ht = maxYCoord - minYCoord + 1;
+
+        let isFull = true;
+        for (let y=minYCoord; y <= maxYCoord; y++) {
+            for (let x=minXCoord; x <= maxXCoord; x++) {
+                const cords = `${x},${y}`;
+                if (!pixels.has(cords)) {
+                    isFull = false;
+                    break;
+                }
+            }
+            if (!isFull) {
+                break;                      
+            }
+        }
+       
+        if (isFull) {
+            if (wid === ht) {
+                return "square";
+            }
+            else {
+                return "rectangle";
+            }
+        }        
+        
+        const rows = {};
+        for (const [x,y] of coords) {
+            if (rows[y] === undefined) {
+                rows[y] = 1;
+            }
+            else {
+                rows[y]++;
+            }
+        }
+
+        const c = Object.values(rows).sort((a,b) => a-b);
+
+        let isTriangle = true;
+        for (let i=1; i < c.length; i++) {
+            if (c[i] <= c[i-1]) {
+                isTriangle = false;
+            }
+        }
+
+        if (isTriangle && c.length >= 3) {
+            return "triangle";
+        }
+
+        else {
+            return "other";
+        }
 </script>
 
 </body> </html>
