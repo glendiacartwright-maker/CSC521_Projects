@@ -209,7 +209,7 @@
             const pixels = parseImage(input.value);
 
             drawShape(pixels);
-
+            const shape = determineShape(pixels);
             successMessage.textContent =
                 `Shape drawn successfully! ${pixels.size} unique pixel(s).`;
 
